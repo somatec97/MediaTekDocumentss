@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using MediaTekDocuments.model;
 using MediaTekDocuments.dal;
+using System;
 
 namespace MediaTekDocuments.controller
 {
@@ -119,10 +120,32 @@ namespace MediaTekDocuments.controller
         /// </summary>
         /// <param name="idDocuement"></param>
         /// <returns></returns>
-        public List<CommandeDocument> GetCommandeDocument(string idDocuement)
+        public List<CommandeDocument> GetCommandeDocument(string idDocument)
         {
-            return access.GetCommandeDocument(idDocuement);
+            return access.GetCommandeDocument(idDocument);
         }
+        /// <summary>
+        /// getter sur les suivis
+        /// </summary>
+        /// <returns>Liste d'objets Suivi</returns>
+        //public List<Suivi> GetAllSuivis()
+        //{
+        //    return access.GetAllSuivis();
+        //}
+        public List<Suivi> GetAllSuivis()
+        {
+            List<Suivi> lesSuivis = access.GetAllSuivis();
+            Console.WriteLine("Données récupérées depuis l'API :");
+            foreach (var suivi in lesSuivis)
+            {
+                Console.WriteLine($"ID: {suivi.Id}, Libelle: {suivi.Libelle}");
+            }
+            return lesSuivis;
+        }
+
+
+
+
         /// <summary>
         /// creer un document dans la bdd
         /// </summary>
@@ -257,5 +280,53 @@ namespace MediaTekDocuments.controller
         {
             return access.DeleteRevue(Id);
         }
+        /// <summary>
+        /// Créé une commande dans la bdd
+        /// </summary>
+        /// <param name="commande"></param>
+        /// <returns>True si la création a pu se faire</returns>
+        public bool CreerCommande(Commande commande)
+        {
+            return access.CreerCommande(commande);
+        }
+
+        /// <summary>
+        /// Créé une commande de document dans la bdd
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="nbExemplaire"></param>
+        /// <param name="idLivreDvd"></param>
+        /// <param name="idSuivi"></param>
+        /// <returns>True si la création a pu se faire</returns>
+        public bool CreerCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
+        {
+            return access.CreerCommandeDocument(id, nbExemplaire, idLivreDvd, idSuivi);
+        }
+
+        /// <summary>
+        /// Modifie l'étape de suivi d'une commande dans la bdd
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="nbExemplaire"></param>
+        /// <param name="idLivreDvd"></param>
+        /// <param name="idSuivi"></param>
+        /// <returns>True si la modification a pu se faire</returns>
+        internal bool EditSuiviCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
+        {
+            return access.EditSuiviCommandeDocument(id, nbExemplaire, idLivreDvd, idSuivi);
+        }
+
+        /// <summary>
+        /// Supprimme une commande de livre dans la bdd
+        /// </summary>
+        /// <param name="commandesdocument"></param>
+        /// <returns>True si la suppression a pu se faire</returns>
+        public bool DeleteCommandeDocument(CommandeDocument commandesDocument)
+        {
+            return access.DeleteCommandeDocument(commandesDocument);
+        }
+
+
+
     }
 }

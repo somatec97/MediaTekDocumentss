@@ -1,0 +1,8 @@
+# Configuration du projet SonarLint
+sonar.projectKey=my_project
+sonar.projectName=My Project
+sonar.projectVersion=1.0
+
+# Activer les logs détaillés
+sonar.verbose=true
+sonar.log.level=DEBUG

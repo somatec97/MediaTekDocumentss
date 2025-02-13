@@ -148,6 +148,17 @@ namespace MediaTekDocuments.dal
             return LesDocuments;
         }
         /// <summary>
+        /// Retourne les suivis d'un document
+        /// </summary>
+        /// <returns>Liste d'objets Suivi</returns>
+        public List<Suivi> GetAllSuivis()
+        {
+            List<Suivi> lesSuivis = TraitementRecup<Suivi>(GET, "suivi");
+            return lesSuivis;
+        }
+
+
+        /// <summary>
         /// ecrire un document en bdd
         /// </summary>
         /// <param name="Id">Id document à insérer</param>
@@ -427,6 +438,101 @@ namespace MediaTekDocuments.dal
             return false;
         }
         /// <summary>
+        /// Ecriture d'une commande en base de données
+        /// </summary>
+        /// <param name="commande"></param>
+        /// <returns>True si l'insertion a pu se faire</returns>
+        public bool CreerCommande(Commande commande)
+        {
+            String jsonCreerCommande = JsonConvert.SerializeObject(commande, new CustomDateTimeConverter());
+            Console.WriteLine("jsonCreerCommande " + jsonCreerCommande);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<Commande> liste = TraitementRecup<Commande>(POST, "commande/" + jsonCreerCommande);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Ecriture d'une commande de document en base de données
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="nbExemplaire"></param>
+        /// <param name="idLivreDvd"></param>
+        /// <param name="idSuivi"></param>
+        /// <returns>True si l'insertion a pu se faire</returns>
+        public bool CreerCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
+        {
+            String jsonCreerCommandeDocument = "{ \"id\" : \"" + id + "\", \"nbExemplaire\" : \"" + nbExemplaire + "\", \"idLivreDvd\" : \"" + idLivreDvd + "\", \"idSuivi\" : \"" + idSuivi + "\"}";
+            Console.WriteLine("jsonCreerCommandeDocument" + jsonCreerCommandeDocument);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(POST, "commandedocument/" + jsonCreerCommandeDocument);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Modification de l'étape de suivi d'une commande de document en base de données
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="nbExemplaire"></param>
+        /// <param name="idLivreDvd"></param>
+        /// <param name="idSuivi"></param>
+        /// <returns>True si la modification a pu se faire</returns>
+        public bool EditSuiviCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
+        {
+            String jsonEditSuiviCommandeDocument = "{ \"id\" : \"" + id + "\", \"idSuivi\" : \"" + idSuivi + "\"}";
+            Console.WriteLine("jsonEditSuiviCommandeDocument" + jsonEditSuiviCommandeDocument);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(PUT, "commandedocument/" + id + "/" + jsonEditSuiviCommandeDocument);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Suppression d'une commande de document en base de données
+        /// </summary>
+        /// <param name="commandesDocument"></param>
+        /// <returns>True si la suppression a pu se faire</returns>
+        public bool DeleteCommandeDocument(CommandeDocument commandesDocument)
+        {
+            String jsonDeleteCommandeDocument = "{\"id\":\"" + commandesDocument.Id + "\"}";
+            Console.WriteLine("jsonDeleteCommandeDocument=" + jsonDeleteCommandeDocument);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(DELETE, "commandedocument/" + jsonDeleteCommandeDocument);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+
+        /// <summary>
         /// retourne les exemplaires d'un document
         /// </summary>
         /// <param name="idDocument"></param>
@@ -480,6 +586,19 @@ namespace MediaTekDocuments.dal
                 Console.WriteLine(ex.Message);
             }
             return false; 
+        }
+       
+
+        /// <summary>
+        /// Retourne les commandes des documents
+        /// </summary>
+        /// <param name="idDocument">id du document concerné</param>
+        /// <returns>Liste d'objets CommandeDocument</returns>
+
+        public List<CommandeDocument> GetCommandesDocument(string idDocument)
+        {
+            List<CommandeDocument> lescommandesdocument = TraitementRecup<CommandeDocument>(GET, "commandedocument/" + idDocument);
+            return lescommandesdocument;
         }
 
         /// <summary>
