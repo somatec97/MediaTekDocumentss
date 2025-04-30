@@ -2,13 +2,14 @@
 using MediaTekDocuments.model;
 using MediaTekDocuments.dal;
 using System;
+using System.Windows.Forms;
 
 namespace MediaTekDocuments.controller
 {
     /// <summary>
     /// Contrôleur lié à FrmMediatek
     /// </summary>
-    class FrmMediatekController
+    public class FrmMediatekController
     {
         /// <summary>
         /// Objet d'accès aux données
@@ -128,10 +129,7 @@ namespace MediaTekDocuments.controller
         /// getter sur les suivis
         /// </summary>
         /// <returns>Liste d'objets Suivi</returns>
-        //public List<Suivi> GetAllSuivis()
-        //{
-        //    return access.GetAllSuivis();
-        //}
+       
         public List<Suivi> GetAllSuivis()
         {
             List<Suivi> lesSuivis = access.GetAllSuivis();
@@ -311,9 +309,9 @@ namespace MediaTekDocuments.controller
         /// <param name="idLivreDvd"></param>
         /// <param name="idSuivi"></param>
         /// <returns>True si la modification a pu se faire</returns>
-        internal bool EditSuiviCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
+        internal bool EditSuiviCommandeDocument(string id, string idSuivi)
         {
-            return access.EditSuiviCommandeDocument(id, nbExemplaire, idLivreDvd, idSuivi);
+            return access.EditSuiviCommandeDocument(id, idSuivi);
         }
 
         /// <summary>
@@ -325,7 +323,45 @@ namespace MediaTekDocuments.controller
         {
             return access.DeleteCommandeDocument(commandesDocument);
         }
+        /// <summary>
+        /// récupère les abonnements d'une revue
+        /// </summary>
+        /// <param name="idDocument"></param>
+        /// <returns>Liste d'objets Abonnement</returns>
+        public List<Abonnement> GetAbonnementRevue(string idDocument)
+        {
+            return access.GetAbonnementRevue(idDocument);
+        }
+        /// <summary>
+        /// Crée un abonnement de revue dans la bdd
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="dateFinAbonnement"></param>
+        /// <param name="idRevue"></param>
+        /// <returns>True si l'insertion pu se faire</returns>
+        public bool CreerAbonnementRevue(string id, DateTime dateFinAbonnement, string idRevue)
+        {
+            return access.CreerAbonnementRevue(id, dateFinAbonnement, idRevue);
+        }
 
+
+        /// <summary>
+        /// Supprimme un abonnement de revue dans la bdd
+        /// </summary>
+        /// <param name="abonnement"></param>
+        /// <returns></returns>
+        public bool SupprimerAbonnementRevue(Abonnement abonnement)
+        {
+            return access.SupprimerAbonnementRevue(abonnement);
+        }
+        /// <summary>
+        /// récupère les abonnements qui prennent fin dans 30 jours
+        /// </summary>
+        /// <returns></returns>
+        public List<Abonnement> GetAbonnementsEcheance( )
+        {
+            return access.GetAbonnementsEcheance( );
+        }
 
 
     }

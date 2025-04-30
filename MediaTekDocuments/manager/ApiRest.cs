@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 using Newtonsoft.Json.Linq;
 
 namespace MediaTekDocuments.manager
@@ -60,30 +61,107 @@ namespace MediaTekDocuments.manager
         /// <param name="methode">verbe http (GET, POST, PUT, DELETE)</param>
         /// <param name="message">message à envoyer dans l'URL</param>
         /// <returns>liste d'objets (select) ou liste vide (ok) ou null si erreur</returns>
+        //public JObject RecupDistant(string methode, string message)
+        //{
+
+        //    // envoi du message et attente de la réponse
+        //    switch (methode)
+        //    {
+        //        case "GET":
+        //            httpResponse = httpClient.GetAsync(message).Result;
+        //            break;
+        //        case "POST":
+        //            httpResponse = httpClient.PostAsync(message, null).Result;
+        //            break;
+        //        case "PUT":
+        //            httpResponse = httpClient.PutAsync(message, null).Result;
+        //            break;
+        //        case "DELETE":
+        //            httpResponse = httpClient.DeleteAsync(message).Result;
+        //            break;
+        //        // methode incorrecte
+        //        default:
+        //            return new JObject();
+        //    }
+        //    Console.WriteLine("Contenu envoyé : " );
+
+        //    // récupération de l'information retournée par l'api
+        //    return httpResponse.Content.ReadAsAsync<JObject>().Result;
+        //}
+        //public JObject RecupDistant(string methode, string message)
+        //{
+        //    // Création d’un body vide mais valide
+        //    HttpContent content = new StringContent("", Encoding.UTF8, "application/x-www-form-urlencoded");
+
+        //    switch (methode)
+        //    {
+        //        case "GET":
+        //            httpResponse = httpClient.GetAsync(message).Result;
+        //            break;
+        //        case "POST":
+        //            httpResponse = httpClient.PostAsync(message, content).Result;
+        //            break;
+        //        case "PUT":
+        //            httpResponse = httpClient.PutAsync(message, content).Result;
+        //            break;
+        //        case "DELETE":
+        //            httpResponse = httpClient.DeleteAsync(message).Result;
+        //            break;
+        //        default:
+        //            return new JObject();
+        //    }
+
+        //    Console.WriteLine("Contenu envoyé : " + message);
+        //    return httpResponse.Content.ReadAsAsync<JObject>().Result;
+
+        //}
         public JObject RecupDistant(string methode, string message)
         {
-            // envoi du message et attente de la réponse
+            // Création d’un body vide mais valide
+            HttpContent content = new StringContent("", Encoding.UTF8, "application/x-www-form-urlencoded");
+
             switch (methode)
             {
                 case "GET":
                     httpResponse = httpClient.GetAsync(message).Result;
                     break;
                 case "POST":
-                    httpResponse = httpClient.PostAsync(message, null).Result;
+                    httpResponse = httpClient.PostAsync(message, content).Result;
                     break;
                 case "PUT":
-                    httpResponse = httpClient.PutAsync(message, null).Result;
+                    httpResponse = httpClient.PutAsync(message, content).Result;
                     break;
                 case "DELETE":
                     httpResponse = httpClient.DeleteAsync(message).Result;
                     break;
-                // methode incorrecte
                 default:
                     return new JObject();
             }
-            // récupération de l'information retournée par l'api
-            return httpResponse.Content.ReadAsAsync<JObject>().Result;
+
+            Console.WriteLine("Contenu envoyé : " + message);
+
+            // ✅ Lecture du contenu brut
+            string responseText = httpResponse.Content.ReadAsStringAsync().Result;
+            Console.WriteLine("Réponse brute reçue : " + responseText);
+
+            // ✅ Nettoyage : on garde seulement la partie JSON à partir du premier '{'
+            int index = responseText.IndexOf('{');
+            if (index >= 0)
+            {
+                string jsonClean = responseText.Substring(index);
+                return JObject.Parse(jsonClean);  // ✅ Parsing sans erreur
+            }
+            else
+            {
+                Console.WriteLine("Réponse invalide : pas de JSON détecté.");
+                return new JObject();
+            }
         }
+
+
+
+
+
 
     }
 }

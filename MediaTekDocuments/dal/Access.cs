@@ -6,6 +6,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
+using System.Net;
+using System.Windows.Forms;
+using System.IO;
+using System.Linq;
 
 namespace MediaTekDocuments.dal
 {
@@ -22,6 +26,7 @@ namespace MediaTekDocuments.dal
         /// instance unique de la classe
         /// </summary>
         private static Access instance = null;
+
         /// <summary>
         /// instance de ApiRest pour envoyer des demandes vers l'api et recevoir la réponse
         /// </summary>
@@ -185,6 +190,8 @@ namespace MediaTekDocuments.dal
             }
             return false;
         }
+       
+
         /// <summary>
         /// modification d'un document en bdd
         /// </summary>
@@ -202,7 +209,7 @@ namespace MediaTekDocuments.dal
             try
             {
                 //récupération doit d'une liste vide (requête ok) soit de null (erreur)
-                List<Document> liste = TraitementRecup<Document>(PUT, "document/" + Id + "/" + jsonEditDocument);
+                List<Document> liste = TraitementRecup<Document>(PUT, "document/"+ Id+ "/" + jsonEditDocument);
                 return (liste != null);
             }
             catch (Exception ex)
@@ -211,6 +218,8 @@ namespace MediaTekDocuments.dal
             }
             return false;
         }
+       
+
         /// <summary>
         /// supprimer un document en bdd
         /// </summary>
@@ -256,6 +265,8 @@ namespace MediaTekDocuments.dal
             }
             return false;
         }
+
+
         /// <summary>
         /// modification d'un livre en bdd
         /// </summary>
@@ -271,7 +282,7 @@ namespace MediaTekDocuments.dal
             try
             {
                 //récupération doit d'une liste vide (requête ok) soit de null (erreur)
-                List<Livre> liste = TraitementRecup<Livre>(PUT, "livre/" + Id + "/" + jsonEditLivre);
+                List<Livre> liste = TraitementRecup<Livre>(PUT, "livre/"+ Id+ "/" + jsonEditLivre);
                 return (liste != null);
             }
             catch (Exception ex)
@@ -280,6 +291,8 @@ namespace MediaTekDocuments.dal
             }
             return false;
         }
+       
+
         /// <summary>
         /// supprimer un livre en bdd
         /// </summary>
@@ -340,7 +353,7 @@ namespace MediaTekDocuments.dal
             try
             {
                 //récupération doit d'une liste vide (requête ok) soit de null (erreur)
-                List<Dvd> liste = TraitementRecup<Dvd>(PUT, "dvd/" + Id + "/" + jsonEditDvd);
+                List<Dvd> liste = TraitementRecup<Dvd>(PUT, "dvd"+ Id+ "/" + jsonEditDvd);
                 return (liste != null);
             }
             catch (Exception ex)
@@ -407,7 +420,7 @@ namespace MediaTekDocuments.dal
             try
             {
                 //récupération doit d'une liste vide (requête ok) soit de null (erreur)
-                List<Revue> liste = TraitementRecup<Revue>(PUT, "revue/" + Id + "/" + jsonEditRevue);
+                List<Revue> liste = TraitementRecup<Revue>(PUT, "revue/"+ Id+ "/" + jsonEditRevue);
                 return (liste != null);
             }
             catch (Exception ex)
@@ -467,22 +480,32 @@ namespace MediaTekDocuments.dal
         /// <param name="idLivreDvd"></param>
         /// <param name="idSuivi"></param>
         /// <returns>True si l'insertion a pu se faire</returns>
+
         public bool CreerCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
         {
-            String jsonCreerCommandeDocument = "{ \"id\" : \"" + id + "\", \"nbExemplaire\" : \"" + nbExemplaire + "\", \"idLivreDvd\" : \"" + idLivreDvd + "\", \"idSuivi\" : \"" + idSuivi + "\"}";
-            Console.WriteLine("jsonCreerCommandeDocument" + jsonCreerCommandeDocument);
+            string json = "{\"id\":\"" + id + "\"," +
+                          "\"nbExemplaire\":" + nbExemplaire + "," +
+                          "\"idLivreDvd\":\"" + idLivreDvd + "\"," +
+                          "\"idSuivi\":\"" + idSuivi + "\"}";
+
+            string jsonEncoded = Uri.EscapeDataString(json);
+            string url = "commandedocument/" + jsonEncoded;
+
+            Console.WriteLine(" URL appelée : " + url);
+
             try
             {
-                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
-                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(POST, "commandedocument/" + jsonCreerCommandeDocument);
+                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(POST, url);
                 return (liste != null);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(" Exception : " + ex.Message);
             }
+
             return false;
         }
+
 
         /// <summary>
         /// Modification de l'étape de suivi d'une commande de document en base de données
@@ -492,20 +515,27 @@ namespace MediaTekDocuments.dal
         /// <param name="idLivreDvd"></param>
         /// <param name="idSuivi"></param>
         /// <returns>True si la modification a pu se faire</returns>
-        public bool EditSuiviCommandeDocument(string id, int nbExemplaire, string idLivreDvd, string idSuivi)
+      
+        public bool EditSuiviCommandeDocument(string id, string idSuivi)
         {
-            String jsonEditSuiviCommandeDocument = "{ \"id\" : \"" + id + "\", \"idSuivi\" : \"" + idSuivi + "\"}";
-            Console.WriteLine("jsonEditSuiviCommandeDocument" + jsonEditSuiviCommandeDocument);
+            string json = "{\"idSuivi\":\"" + idSuivi + "\"}";
+            string jsonEncoded = Uri.EscapeDataString(json);
+
+            // JSON passé dans ?champs=
+            string url = "commandedocument/" + id + "?champs=" + jsonEncoded;
+
+            Console.WriteLine(" URL appelée : " + url);
+
             try
             {
-                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
-                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(PUT, "commandedocument/" + id + "/" + jsonEditSuiviCommandeDocument);
+                List<CommandeDocument> liste = TraitementRecup<CommandeDocument>(PUT, url);
                 return (liste != null);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(" Erreur : " + ex.Message);
             }
+
             return false;
         }
 
@@ -548,12 +578,113 @@ namespace MediaTekDocuments.dal
         /// </summary>
         /// <param name="idDocument"></param>
         /// <returns></returns>
+       
         public List<CommandeDocument> GetCommandeDocument(string idDocument)
         {
-            String jsonIdDocument = convertToJson("id", idDocument);
-            List<CommandeDocument> lesCommandesDocuments = TraitementRecup<CommandeDocument>(GET, "commandeDocument/" + jsonIdDocument);
-            return lesCommandesDocuments;
+            //  Construit l’URL REST 
+            string route = $"commandedocument/{idDocument}";
+
+            // Envoie une requête GET simple
+            List<CommandeDocument> lesCommandesDocument = TraitementRecup<CommandeDocument>(GET, route);
+
+            return lesCommandesDocument;
         }
+        /// <summary>
+
+
+        /// Retourne les abonnements d'une revue
+        /// </summary>
+        /// <param name="idDocument"></param>
+        /// <returns>Liste d'objets Abonnement</returns>
+        public List<Abonnement> GetAbonnementRevue(string idDocument)
+        {
+            List<Abonnement> lesAbonnementsRevue = TraitementRecup<Abonnement>(GET, "abonnement/" + idDocument);
+            foreach (var ab in lesAbonnementsRevue)
+            {
+                Console.WriteLine($"[DEBUG ABO] id={ab.Id}, dateCommande={ab.DateCommande}, montant={ab.Montant}, dateFin={ab.DateFinAbonnement}, idRevue={ab.IdRevue}, titre={ab.Titre}");
+            }
+
+            return lesAbonnementsRevue;
+        }
+        /// <summary>
+        /// Ecriture d'un abonnement à une revue en base de données
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="dateFinAbonnement"></param>
+        /// <param name="idRevue"></param>
+        /// <returns>True si l'insertion a pu se faire</returns>
+        public bool CreerAbonnementRevue(string id, DateTime dateFinAbonnement, string idRevue)
+        {
+            String jsonDateCommande = JsonConvert.SerializeObject(dateFinAbonnement, new CustomDateTimeConverter());
+            String jsonCreerAbonnementRevue = "{\"id\":\"" + id + "\", \"dateFinAbonnement\" : " + jsonDateCommande + ", \"idRevue\" :  \"" + idRevue + "\"}";
+            Console.WriteLine("jsonCreerAbonnementRevue" + jsonCreerAbonnementRevue);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<Abonnement> liste = TraitementRecup<Abonnement>(POST, "abonnement/" + jsonCreerAbonnementRevue);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Suppression d'un abonnement de revue en base de données
+        /// </summary>
+        /// <param name="abonnement"></param>
+        /// <returns>True si la suppression a pu se faire</returns>
+        public bool SupprimerAbonnementRevue(Abonnement abonnement)
+        {
+            String jsonSupprimerAbonnementRevue = "{\"id\":\"" + abonnement.Id + "\"}";
+            Console.WriteLine("jsonSupprimerAbonnementRevue=" + jsonSupprimerAbonnementRevue);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<Abonnement> liste = TraitementRecup<Abonnement>(DELETE, "abonnement/" + jsonSupprimerAbonnementRevue);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+        /// <summary>
+        /// Retourne les abonnements arrivants à échéance dans 30 jours
+        /// </summary>
+        /// <returns></returns>
+        //public List<Abonnement> GetAbonnementsEcheance()
+        //{
+        //    List<Abonnement> lesAbonnementsAEcheance = TraitementRecup<Abonnement>(GET, "abonnementsecheance");
+        //    return lesAbonnementsAEcheance;
+        //}
+        public List<Abonnement> GetAbonnementsEcheance()
+        {
+            try
+            {
+                string route = "abonnementsecheance";
+                List<Abonnement> lesAbonnementsAEcheance = TraitementRecup<Abonnement>(GET, route);
+                return lesAbonnementsAEcheance;
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var inner in ex.InnerExceptions)
+                {
+                    Console.WriteLine("Erreur interne : " + inner.Message);
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur générale : " + ex.Message);
+                return null;
+            }
+        }
+
 
 
         /// <summary>
@@ -578,7 +709,7 @@ namespace MediaTekDocuments.dal
             String jsonExemplaire = JsonConvert.SerializeObject(exemplaire, new CustomDateTimeConverter());
             try {
                 // récupération soit d'une liste vide (requête ok) soit de null (erreur)
-                List<Exemplaire> liste = TraitementRecup<Exemplaire>(POST, "exemplaire/" + jsonExemplaire);
+                List<Exemplaire> liste = TraitementRecup<Exemplaire>(POST, "exemplaire/"+ jsonExemplaire);
                 return (liste != null);
             }
             catch (Exception ex)
@@ -587,19 +718,7 @@ namespace MediaTekDocuments.dal
             }
             return false; 
         }
-       
 
-        /// <summary>
-        /// Retourne les commandes des documents
-        /// </summary>
-        /// <param name="idDocument">id du document concerné</param>
-        /// <returns>Liste d'objets CommandeDocument</returns>
-
-        public List<CommandeDocument> GetCommandesDocument(string idDocument)
-        {
-            List<CommandeDocument> lescommandesdocument = TraitementRecup<CommandeDocument>(GET, "commandedocument/" + idDocument);
-            return lescommandesdocument;
-        }
 
         /// <summary>
         /// Traitement de la récupération du retour de l'api, avec conversion du json en liste pour les select (GET)
@@ -608,7 +727,7 @@ namespace MediaTekDocuments.dal
         /// <param name="methode">verbe HTTP (GET, POST, PUT, DELETE)</param>
         /// <param name="message">information envoyée</param>
         /// <returns>liste d'objets récupérés (ou liste vide)</returns>
-        private List<T> TraitementRecup<T> (String methode, String message)
+        private List<T> TraitementRecup<T>(String methode, String message)
         {
             List<T> liste = new List<T>();
             try
@@ -623,6 +742,8 @@ namespace MediaTekDocuments.dal
                     {
                         String resultString = JsonConvert.SerializeObject(retour["result"]);
                         // construction de la liste d'objets à partir du retour de l'api
+                        string responseBody = null;
+                        Console.WriteLine("JSON brut reçu : " + responseBody);
                         liste = JsonConvert.DeserializeObject<List<T>>(resultString, new CustomBooleanJsonConverter());
                     }
                 }
@@ -630,13 +751,18 @@ namespace MediaTekDocuments.dal
                 {
                     Console.WriteLine("code erreur = " + code + " message = " + (String)retour["message"]);
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
-                Console.WriteLine("Erreur lors de l'accès à l'API : "+e.Message);
+                Console.WriteLine("Erreur lors de l'accès à l'API : " + e.Message);
                 Environment.Exit(0);
             }
             return liste;
+
+
+
         }
+
 
         /// <summary>
         /// Convertit en json un couple nom/valeur
@@ -680,5 +806,6 @@ namespace MediaTekDocuments.dal
             }
         }
 
+       
     }
 }
