@@ -88,7 +88,49 @@ namespace MediaTekDocuments.manager
         //    // récupération de l'information retournée par l'api
         //    return httpResponse.Content.ReadAsAsync<JObject>().Result;
         //}
-      
+
+        //public JObject RecupDistant(string methode, string message)
+        //{
+        //    // Création d’un body vide mais valide
+        //    HttpContent content = new StringContent("", Encoding.UTF8, "application/x-www-form-urlencoded");
+
+        //    switch (methode)
+        //    {
+        //        case "GET":
+        //            httpResponse = httpClient.GetAsync(message).Result;
+        //            break;
+        //        case "POST":
+        //            httpResponse = httpClient.PostAsync(message, content).Result;
+        //            break;
+        //        case "PUT":
+        //            httpResponse = httpClient.PutAsync(message, content).Result;
+        //            break;
+        //        case "DELETE":
+        //            httpResponse = httpClient.DeleteAsync(message).Result;
+        //            break;
+        //        default:
+        //            return new JObject();
+        //    }
+
+        //    Console.WriteLine("Contenu envoyé : " + message);
+
+        //    // Lecture du contenu brut
+        //    string responseText = httpResponse.Content.ReadAsStringAsync().Result;
+        //    Console.WriteLine("Réponse brute reçue : " + responseText);
+
+        //    // Nettoyage : on garde seulement la partie JSON à partir du premier '{'
+        //    int index = responseText.IndexOf('{');
+        //    if (index >= 0)
+        //    {
+        //        string jsonClean = responseText.Substring(index);
+        //        return JObject.Parse(jsonClean);  // Parsing sans erreur
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Réponse invalide : pas de JSON détecté.");
+        //        return new JObject();
+        //    }
+        //}
         public JObject RecupDistant(string methode, string message)
         {
             // Création d’un body vide mais valide
@@ -114,16 +156,20 @@ namespace MediaTekDocuments.manager
 
             Console.WriteLine("Contenu envoyé : " + message);
 
-            // Lecture du contenu brut
+            // ✅ Lecture du contenu brut
             string responseText = httpResponse.Content.ReadAsStringAsync().Result;
             Console.WriteLine("Réponse brute reçue : " + responseText);
 
-            // Nettoyage : on garde seulement la partie JSON à partir du premier '{'
+            // ✅ Nettoyage pour extraire uniquement le JSON propre
+            // Chercher l'indice du premier '{' qui marque le début du JSON
             int index = responseText.IndexOf('{');
             if (index >= 0)
             {
-                string jsonClean = responseText.Substring(index);
-                return JObject.Parse(jsonClean);  // Parsing sans erreur
+                string jsonClean = responseText.Substring(index);  // Extrait le JSON valide
+                Console.WriteLine("JSON nettoyé : " + jsonClean);
+
+                // Parse le JSON propre
+                return JObject.Parse(jsonClean);
             }
             else
             {
@@ -131,6 +177,7 @@ namespace MediaTekDocuments.manager
                 return new JObject();
             }
         }
+
 
 
 

@@ -73,6 +73,8 @@ namespace MediaTekDocuments.view
             RemplirCbxNewPublicLivre();
             RemplirCbxNewRayonLivre();
             RemplirLivresListeComplete();
+            gbxExemplairesLivre.Enabled = false;
+            gbxEtatExemplaireLivre.Enabled = false;
         }
 
         /// <summary>
@@ -112,6 +114,8 @@ namespace MediaTekDocuments.view
                 {
                     List<Livre> livres = new List<Livre>() { livre };
                     RemplirLivresListe(livres);
+                    gbxExemplairesLivre.Enabled = true;
+                    AfficheExemplairesLivres();
                 }
                 else
                 {
@@ -629,7 +633,230 @@ namespace MediaTekDocuments.view
                 }
             }
         }
+        private readonly BindingSource bdgExemplairesLivre = new BindingSource();
+        private List<Exemplaire> lesExemplairesDocument = new List<Exemplaire>();
 
+
+        /// <summary>
+        /// Remplit la datagrid avec la liste passée en paramètre
+        /// </summary>
+        /// <param name="lesExemplaires"></param>
+        private void RemplirExemplairesLivre(List<Exemplaire> lesExemplaires)
+        {
+            if (lesExemplaires != null)
+            {
+                bdgExemplairesLivre.DataSource = lesExemplaires;
+                dgvExemplairesLivre.DataSource = bdgExemplairesLivre;
+                dgvExemplairesLivre.Columns["photo"].Visible = false;
+                dgvExemplairesLivre.Columns["idEtat"].Visible = false;
+                dgvExemplairesLivre.Columns["id"].Visible = false;
+                dgvExemplairesLivre.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                dgvExemplairesLivre.Columns[0].HeaderCell.Value = "Numéro";
+                dgvExemplairesLivre.Columns[2].HeaderCell.Value = "Date d'achat";
+                dgvExemplairesLivre.Columns[5].HeaderCell.Value = "Etat";
+            }
+            else
+            {
+                dgvExemplairesLivre.DataSource = null;
+            }
+        }
+
+        /// <summary>
+        /// Affichage des exemplaires d'un livre 
+        /// </summary>
+        private void AfficheExemplairesLivres()
+        {
+            string idDocument = txbLivresNumRecherche.Text;
+            lesExemplairesDocument = controller.GetExemplairesDocument(idDocument);
+            RemplirExemplairesLivre(lesExemplairesDocument);
+        }
+
+        /// <summary>
+        /// Tri sur les colonnes
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">e</param>
+        private void dgvExemplairesLivre_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            string titreColonne = dgvExemplairesLivre.Columns[e.ColumnIndex].HeaderText;
+            List<Exemplaire> sortedList = new List<Exemplaire>();
+            switch (titreColonne)
+            {
+                case "Date d'achat":
+                    sortedList = lesExemplairesDocument.OrderBy(o => o.DateAchat).Reverse().ToList();
+                    break;
+                case "Numéro":
+                    sortedList = lesExemplairesDocument.OrderBy(o => o.Numero).ToList();
+                    break;
+                case "Etat":
+                    sortedList = lesExemplairesDocument.OrderBy(o => o.Libelle).ToList();
+                    break;
+            }
+            RemplirExemplairesLivre(sortedList);
+        }
+
+        /// <summary>
+        /// Remplissage de la comboBox selon les états de l'exemplaire et le libelle correspondant
+        /// </summary>
+        /// <param name="etatExemplaireLivre"></param>
+        private void RemplirCbxEtatLibelleExemplaireLivre(string etatExemplaireLivre)
+        {
+            cbxEtatLibelleExemplaireLivre.Items.Clear();
+            if (etatExemplaireLivre == "neuf")
+            {
+                
+                cbxEtatLibelleExemplaireLivre.Items.Add("usagé");
+                cbxEtatLibelleExemplaireLivre.Items.Add("détérioré");
+                cbxEtatLibelleExemplaireLivre.Items.Add("inutilisable");
+            }
+            else if (etatExemplaireLivre == "usagé")
+            {
+                cbxEtatLibelleExemplaireLivre.Text = "";
+                cbxEtatLibelleExemplaireLivre.Items.Add("neuf");
+                cbxEtatLibelleExemplaireLivre.Items.Add("détérioré");
+                cbxEtatLibelleExemplaireLivre.Items.Add("inutilisable");
+            }
+            else if (etatExemplaireLivre == "détérioré")
+            {
+                cbxEtatLibelleExemplaireLivre.Text = "";
+                cbxEtatLibelleExemplaireLivre.Items.Add("neuf");
+                cbxEtatLibelleExemplaireLivre.Items.Add("usagé");
+                cbxEtatLibelleExemplaireLivre.Items.Add("inutilisable");
+            }
+            else if (etatExemplaireLivre == "inutilisable")
+            {
+                cbxEtatLibelleExemplaireLivre.Text = "";
+                cbxEtatLibelleExemplaireLivre.Items.Add("neuf");
+                cbxEtatLibelleExemplaireLivre.Items.Add("usagé");
+                cbxEtatLibelleExemplaireLivre.Items.Add("détérioré");
+            }
+          
+
+        }
+
+
+        /// <summary>
+        /// Selon le libelle dans la txbBox, affichage des états possibles de l'exemplaire
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void lblEtatExemplaireLivre_TextChanged(object sender, EventArgs e)
+        {
+            // Assure-toi que le texte de l'étiquette n'est pas vide avant de remplir le combo
+            string etatExemplaireLivre = lblEtatExemplaireLivre.Text;
+            if (!string.IsNullOrEmpty(etatExemplaireLivre))
+            {
+                RemplirCbxEtatLibelleExemplaireLivre(etatExemplaireLivre);
+            }
+            else
+            {
+                // Si le texte est vide, tu pourrais décider de vider le ComboBox ou de faire autre chose.
+                cbxEtatLibelleExemplaireLivre.Items.Clear();
+            }
+        }
+
+
+        /// <summary>
+        /// Récupère l'id d'un état selon son libelle
+        /// </summary>
+        /// <param name="libelle"></param>
+        /// <returns></returns>
+        private string GetIdEtat(string libelle)
+        {
+            List<Etat> lesEtats = controller.GetAllEtatsDocument();
+            foreach (Etat unEtat in lesEtats)
+            {
+                if (unEtat.Libelle == libelle)
+                {
+                    return unEtat.Id;
+                }
+            }
+            return null;
+        }
+
+        private void dgvExemplairesLivre_RowEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            // Sécurité : ignorer les lignes vides ou sans données utiles
+            if (e.RowIndex < 0 || dgvExemplairesLivre.Rows[e.RowIndex].IsNewRow)
+                return;
+
+            DataGridViewRow row = dgvExemplairesLivre.Rows[e.RowIndex];
+
+            // Vérifie qu'il y a bien une cellule non vide
+            if (row.Cells["Id"].Value == null || string.IsNullOrWhiteSpace(row.Cells["Id"].Value.ToString()))
+                return;
+
+            // Lecture des données
+            string numero = row.Cells["Numero"].Value.ToString();
+            DateTime dateAchat = (DateTime)row.Cells["dateAchat"].Value;
+            string libelle = row.Cells["Libelle"].Value.ToString();
+
+            // Remplissage
+            txbExemplaireLivresNumero.Text = numero;
+            dtpDateAchatExemplaireLivre.Value = dateAchat;
+            lblEtatExemplaireLivre.Text = libelle;
+            RemplirCbxEtatLibelleExemplaireLivre(libelle); // Pour que le combo soit rempli
+
+            // Activation des groupes si tout est ok
+            gbxExemplairesLivre.Enabled = true;
+            gbxEtatExemplaireLivre.Enabled = true;
+        }
+
+
+
+        /// <summary>
+        /// Modification de l'état d'un exemplaire de livre dans la bdd
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnEtatExemplaireLivreModifier_Click_1(object sender, EventArgs e)
+        {
+            string idDocument = txbLivresNumRecherche.Text;
+            int numero = int.Parse(txbExemplaireLivresNumero.Text);
+            DateTime dateAchat = dtpDateAchatExemplaireLivre.Value;
+            string photo = "";
+            string idEtat = GetIdEtat(cbxEtatLibelleExemplaireLivre.Text);
+            try
+            {
+                string libelle = cbxEtatLibelleExemplaireLivre.SelectedItem.ToString();
+                Exemplaire exemplaire = new Exemplaire(numero, dateAchat, photo, idEtat, idDocument, libelle);
+                if (MessageBox.Show("Voulez-vous modifier l'état de l'exemplaire " + exemplaire.Numero + " en " + libelle + " ?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    controller.ModifierEtatExemplaireDocument(exemplaire);
+                    MessageBox.Show("L'état de l'exemplaire " + exemplaire.Numero + " a bien été modifié.", "Information");
+                    AfficheExemplairesLivres();
+                }
+            }
+            catch (NullReferenceException)
+            {
+                MessageBox.Show("Le nouvel état de l'exemplaire doit être sélectionné.", "Information");
+            }
+        }
+
+
+        /// <summary>
+        /// Suppression d'un exemplaire de livre dans la bdd
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnExemplaireLivreSupprimer_Click_1(object sender, EventArgs e)
+        {
+            if (dgvExemplairesLivre.SelectedRows.Count > 0)
+            {
+                Exemplaire exemplaire = (Exemplaire)bdgExemplairesLivre.List[bdgExemplairesLivre.Position];
+                if (MessageBox.Show("Voulez-vous supprimer l'exemplaire " + exemplaire.Numero + " du livre " + exemplaire.Id + " ?", "Confirmation de suppression", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    controller.SupprimerExemplaireDocument(exemplaire);
+                    MessageBox.Show("L'exemplaire " + exemplaire.Numero + " a bien été supprimé.", "Information");
+                    AfficheExemplairesLivres();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Une ligne doit être sélectionnée.", "Information");
+            }
+        }
+       
 
         #endregion
 
@@ -1851,9 +2078,12 @@ namespace MediaTekDocuments.view
                     string photo = txbReceptionExemplaireImage.Text;
                     string idEtat = ETATNEUF;
                     string idDocument = txbReceptionRevueNumero.Text;
-                    Exemplaire exemplaire = new Exemplaire(numero, dateAchat, photo, idEtat, idDocument);
-                    if (controller.CreerExemplaire(exemplaire))
-                    {
+                    string libelle = "";
+                    Exemplaire exemplaire = new Exemplaire(numero, dateAchat, photo, idEtat, idDocument, libelle);
+                    //if (controller.CreerExemplaire(exemplaire))
+                    if (controller.CreerExemplaireRevue(idDocument, numero, dateAchat, photo, idEtat))
+
+                        {
                         AfficheReceptionExemplairesRevue();
                     }
                     else
@@ -3212,6 +3442,13 @@ namespace MediaTekDocuments.view
         {
 
         }
+
+        private void FrmMediatek_Load(object sender, EventArgs e)
+        {
+
+        }
+
+       
     }
 }
 

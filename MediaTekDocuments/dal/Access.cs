@@ -569,16 +569,20 @@ namespace MediaTekDocuments.dal
         /// <returns></returns>
         public List<Exemplaire> GetExemplairesDocument(string idDocument)
         {
-            String jsonIdDocument = convertToJson("id", idDocument);
+            if (string.IsNullOrWhiteSpace(idDocument)) return new List<Exemplaire>();
+
+            // Encoder uniquement pour la table exemplaire
+            string jsonIdDocument = Uri.EscapeDataString(convertToJson("id", idDocument));
             List<Exemplaire> lesExemplaires = TraitementRecup<Exemplaire>(GET, "exemplaire/" + jsonIdDocument);
             return lesExemplaires;
         }
+
         /// <summary>
         /// retourne les commandes d'un document
         /// </summary>
         /// <param name="idDocument"></param>
         /// <returns></returns>
-       
+
         public List<CommandeDocument> GetCommandeDocument(string idDocument)
         {
             //  Construit l’URL REST 
@@ -590,8 +594,6 @@ namespace MediaTekDocuments.dal
             return lesCommandesDocument;
         }
         /// <summary>
-
-
         /// Retourne les abonnements d'une revue
         /// </summary>
         /// <param name="idDocument"></param>
@@ -601,11 +603,16 @@ namespace MediaTekDocuments.dal
             List<Abonnement> lesAbonnementsRevue = TraitementRecup<Abonnement>(GET, "abonnement/" + idDocument);
             foreach (var ab in lesAbonnementsRevue)
             {
+                // Si ces champs ne sont pas dans la réponse JSON, affecte des valeurs par défaut.
+                ab.DateCommande = ab.DateCommande == DateTime.MinValue ? DateTime.Now : ab.DateCommande;
+                ab.Montant = ab.Montant == 0 ? 0 : ab.Montant;
+
                 Console.WriteLine($"[DEBUG ABO] id={ab.Id}, dateCommande={ab.DateCommande}, montant={ab.Montant}, dateFin={ab.DateFinAbonnement}, idRevue={ab.IdRevue}, titre={ab.Titre}");
             }
 
             return lesAbonnementsRevue;
         }
+
         /// <summary>
         /// Ecriture d'un abonnement à une revue en base de données
         /// </summary>
@@ -687,6 +694,7 @@ namespace MediaTekDocuments.dal
 
 
 
+
         /// <summary>
         /// Retourne les exemplaires d'une revue
         /// </summary>
@@ -719,6 +727,86 @@ namespace MediaTekDocuments.dal
             return false; 
         }
 
+        /// <summary>
+        /// Ecriture d'un exemplaire de revue en base de données
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="numero"></param>
+        /// <param name="dateAchat"></param>
+        /// <param name="photo"></param>
+        /// <param name="idEtat"></param>
+        /// <returns>True si l'insertion a pu se faire</returns>
+        public bool CreerExemplaireRevue(string id, int numero, DateTime dateAchat, string photo, string idEtat)
+        {
+            String jsonDateAchat = JsonConvert.SerializeObject(dateAchat, new CustomDateTimeConverter());
+            String jsonCreerExemplaireRevue = "{\"id\":\"" + id + "\", \"numero\":\"" + numero + "\", \"dateAchat\" : " + jsonDateAchat + ", \"photo\" :  \"" + photo + "\" , \"idEtat\" :  \"" + idEtat + "\"}";
+            Console.WriteLine("jsonCreerExemplaireRevue" + jsonCreerExemplaireRevue);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<Abonnement> liste = TraitementRecup<Abonnement>(POST, "exemplaire/" + jsonCreerExemplaireRevue);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Retourne les états d'un document
+        /// </summary>
+        /// <returns>Liste d'objets Etat</returns>
+        public List<Etat> GetAllEtatsDocument()
+        {
+            List<Etat> lesEtats = TraitementRecup<Etat>(GET, "etat");
+            return lesEtats;
+        }
+
+        /// <summary>
+        /// modification de l'état d'un exemplaire en base de données
+        /// </summary>
+        /// <param name="exemplaire"></param>
+        /// <returns>true si la modification a pu se faire </returns>
+        public bool ModifierEtatExemplaireDocument(Exemplaire exemplaire)
+        {
+            String jsonModifierEtatExemplaireDocument = JsonConvert.SerializeObject(exemplaire, new CustomDateTimeConverter());
+            Console.WriteLine("jsonModifierEtatExemplaireDocument" + jsonModifierEtatExemplaireDocument);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<Exemplaire> liste = TraitementRecup<Exemplaire>(PUT, "exemplairesdocument/" + exemplaire.Numero + "/" + jsonModifierEtatExemplaireDocument); // Modification de la requête
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// suppression d'un exemplaire de document en base de données
+        /// </summary>
+        /// <param name="exemplaire"></param>
+        /// <returns>True si la suppression a pu se faire</returns>
+        public bool SupprimerExemplaireDocument(Exemplaire exemplaire)
+        {
+            String jsonSupprimerExemplaireDocument = "{\"id\":\"" + exemplaire.Id + "\",\"numero\":\"" + exemplaire.Numero + "\"}";
+            Console.WriteLine("jsonSupprimerExemplaireDocument" + jsonSupprimerExemplaireDocument);
+            try
+            {
+                // récupération soit d'une liste vide (requête ok) soit de null (erreur)
+                List<Exemplaire> liste = TraitementRecup<Exemplaire>(DELETE, "exemplaire/" + jsonSupprimerExemplaireDocument);
+                return (liste != null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
+        }
 
         /// <summary>
         /// Traitement de la récupération du retour de l'api, avec conversion du json en liste pour les select (GET)

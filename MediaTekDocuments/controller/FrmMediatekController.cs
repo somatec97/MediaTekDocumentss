@@ -99,13 +99,24 @@ namespace MediaTekDocuments.controller
         }
 
         /// <summary>
+        /// récupère les états
+        /// </summary>
+        /// <returns>Liste d'objets Etat</returns>
+        public List<Etat> GetAllEtatsDocument()
+        {
+            return access.GetAllEtatsDocument();
+        }
+
+        /// <summary>
         /// Crée un exemplaire d'une revue dans la bdd
         /// </summary>
         /// <param name="exemplaire">L'objet Exemplaire concerné</param>
         /// <returns>True si la création a pu se faire</returns>
-        public bool CreerExemplaire(Exemplaire exemplaire)
+        //public bool CreerExemplaire(Exemplaire exemplaire)
+        public bool CreerExemplaireRevue(string id, int numero, DateTime dateAchat, string photo, string idEtat)
         {
-            return access.CreerExemplaire(exemplaire);
+            //return access.CreerExemplaire(exemplaire);
+            return access.CreerExemplaireRevue(id, numero, dateAchat, photo, idEtat);
         }
         /// <summary>
         /// creer un exemplaire d'un document dans la bdd
@@ -115,6 +126,26 @@ namespace MediaTekDocuments.controller
         public List<Exemplaire> GetExemplairesDocument(string idDocuement)
         {
             return access.GetExemplairesDocument(idDocuement);
+        }
+
+        /// <summary>
+        /// Modifie l'état d'un exemplaire d'un document dans la bdd
+        /// </summary>
+        /// <param name="exemplaire"></param>
+        /// <returns>True si la modification a pu se faire</returns>
+        public bool ModifierEtatExemplaireDocument(Exemplaire exemplaire)
+        {
+            return access.ModifierEtatExemplaireDocument(exemplaire);
+        }
+
+        /// <summary>
+        /// Supprime un exemplaire d'un document dans la bdd
+        /// </summary>
+        /// <param name="exemplaire"></param>
+        /// <returns>True si la suppression a pu se faire</returns>
+        public bool SupprimerExemplaireDocument(Exemplaire exemplaire)
+        {
+            return access.SupprimerExemplaireDocument(exemplaire);
         }
         /// <summary>
         /// creer une commande d'un document dans la bdd
