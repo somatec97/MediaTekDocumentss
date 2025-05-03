@@ -807,6 +807,7 @@ namespace MediaTekDocuments.dal
             }
             return false;
         }
+       
 
         /// <summary>
         /// Récupère l'utilisateur selon son login
